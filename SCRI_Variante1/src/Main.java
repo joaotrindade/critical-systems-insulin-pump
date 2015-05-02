@@ -9,8 +9,9 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("Variante 1");
-
+        System.out.println("A correr na porta 6791");
         int portNumber = 6791;
+        Device device = new Device();
 
         try {
             ServerSocket serverSocket = new ServerSocket(portNumber);
@@ -20,11 +21,41 @@ public class Main {
 
             while (true) {
 
-                String response = in.readLine();
-                System.out.println("Mandou-me: " + response);
-                out.println("Oi camarada");
+                String message = in.readLine();
+                System.out.println("[V1-IN]"+ message);
 
-                Thread.sleep(10000);
+                if(message.equals("end")){
+                    System.out.println("[V1]Conexão terminou - Não há mais valores para avaliar");
+                    out.println("ack");
+                    return;
+                }
+
+                MessageHandler mh = new MessageHandler(message);
+                double result = -1;
+                if(mh.getDra() == 0){
+                    device.addMinute(mh.minute1, 1);
+                    device.addMinute(mh.minute2, 2);
+                    device.addMinute(mh.minute3, 3);
+                    result = device.process();
+                }
+                else{
+                    // Nao guarda historico de valores DRA
+                    device.discardOldDRAValues();
+                    // Cada linha adiciona os 2 valores ArrayList
+                    device.addDRAMinute(mh.minute1);
+                    device.addDRAMinute(mh.minute2);
+                    device.addDRAMinute(mh.minute3);
+                    result = device.process();
+                }
+
+
+                String response = mh.generateAnswer(result);
+
+                out.println(response);
+
+                System.out.println("[V1-OUT]" + response);
+
+                Thread.sleep(0);
             }
         } catch(IOException e) {
             e.printStackTrace();
