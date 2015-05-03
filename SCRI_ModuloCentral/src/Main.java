@@ -12,7 +12,7 @@ public class Main {
     static ArrayList<String> sensor1 = new ArrayList<String>();
     static ArrayList<String> sensor2 = new ArrayList<String>();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         System.out.println("Modulo Principal");
 
         readFile();
@@ -21,6 +21,13 @@ public class Main {
         Socket socketv1 = null;
         Socket socketv2 = null;
         Socket socketv3 = null;
+
+        PrintWriter outToServerV1;
+        BufferedReader inFromServerV1;
+        /*PrintWriter outToServerV2;
+        BufferedReader inFromServerV2;
+        PrintWriter outToServerV3;
+        BufferedReader inFromServerV3; */
 
         byte[] recBuf = new byte[1024];
 
@@ -31,7 +38,9 @@ public class Main {
         try {
             address = InetAddress.getByName("127.0.0.1");
         } catch (UnknownHostException e1) {
+            System.out.println("Erro: Endereço de rede desconhecido");
             e1.printStackTrace();
+            return;
         }
 
         Boolean connected = false;
@@ -54,10 +63,10 @@ public class Main {
                 //e.printStackTrace();
                 System.out.println("Socket não encontrado, a tentar conectar novamente");
                 continue;
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
+                System.out.println("Erro: Erro de ligação ou interrupção da thread");
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
             finally {
                 if (socketv1 != null){
@@ -67,15 +76,23 @@ public class Main {
 
         }
 
+        try {
+            outToServerV1= new PrintWriter(socketv1.getOutputStream(),true);
+            inFromServerV1 = new BufferedReader(new InputStreamReader(socketv1.getInputStream()));
+            /*
+            outToServerV2 = new PrintWriter(socketv2.getOutputStream(),true);
+            inFromServerV2 = new BufferedReader(new InputStreamReader(socketv2.getInputStream()));
+            outToServerV3 = new PrintWriter(socketv3.getOutputStream(),true);
+            inFromServerV3 = new BufferedReader(new InputStreamReader(socketv3.getInputStream()));
+            */
 
-        PrintWriter outToServerV1 = new PrintWriter(socketv1.getOutputStream(),true);
-        BufferedReader inFromServerV1 = new BufferedReader(new InputStreamReader(socketv1.getInputStream()));
+        } catch (IOException e) {
+            System.out.println("Erro: Ligação ao socket.");
+            e.printStackTrace();
+            return;
+        }
 
-        //PrintWriter outToServerV2 = new PrintWriter(socketv2.getOutputStream(),true);
-        //BufferedReader inFromServerV2 = new BufferedReader(new InputStreamReader(socketv2.getInputStream()));
-//
-        //PrintWriter outToServerV3 = new PrintWriter(socketv3.getOutputStream(),true);
-        //BufferedReader inFromServerV3 = new BufferedReader(new InputStreamReader(socketv3.getInputStream()));
+
 
 
         int iterator = 0;
@@ -100,13 +117,16 @@ public class Main {
                 outToServerV1.println("end");
                 //outToServerV2.println("end");
                 //outToServerV3.println("end");
+                try {
+                    String receivedV1 = inFromServerV1.readLine();
+                    //String receivedV2 = inFromServerV2.readLine();
+                    //String receivedV3 = inFromServerV3.readLine();
 
-                String receivedV1 = inFromServerV1.readLine();
-                //String receivedV2 = inFromServerV2.readLine();
-                //String receivedV3 = inFromServerV3.readLine();
-
-                if(receivedV1.equals("ack")){
-                    return;
+                    if (receivedV1.equals("ack")) {
+                        return;
+                    }
+                } catch (IOException e) {
+                    System.out.println("Erro: Empty Socket");
                 }
 
             }
@@ -174,10 +194,10 @@ public class Main {
                 System.out.println("[Main]À espera "+ delay + " segundos até a próxima iteração");
                 Thread.sleep(delay * 1000);
 
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
+                System.out.println("Erro: Erro de ligação ou interrupção");
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
 
 
@@ -227,7 +247,9 @@ public class Main {
             br.close();
             return;
         } catch (IOException e) {
+            System.out.println("Erro: Ficheiro não existe ou não está acessivel.");
             e.printStackTrace();
+            return;
         }
 
     }
@@ -265,13 +287,12 @@ public class Main {
             byte[] hashedBytes = digest.digest(message.getBytes("UTF-8"));
 
             return convertByteArrayToHexString(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            //TODO: Este erro precisa de melhor handling
+            System.out.println("Erro: Erro na criação da hash da mensagem.");
             e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
     private static String convertByteArrayToHexString(byte[] arrayBytes) {
