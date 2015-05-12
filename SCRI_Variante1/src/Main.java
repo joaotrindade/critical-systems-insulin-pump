@@ -33,9 +33,9 @@ public class Main {
                 MessageHandler mh = new MessageHandler(message);
                 double result = -1;
                 if(mh.getDra() == 0){
-                    device.addMinute(mh.minute1, 1);
-                    device.addMinute(mh.minute2, 2);
-                    device.addMinute(mh.minute3, 3);
+                    device.addMinute(mh.minute1, 1, mh.getIteration());
+                    device.addMinute(mh.minute2, 2, mh.getIteration());
+                    device.addMinute(mh.minute3, 3, mh.getIteration());
                     result = device.process();
                 }
                 else{

@@ -8,6 +8,8 @@ import java.util.ArrayList;
  * Created by Utilizador on 02/05/2015.
  */
 public class MessageHandler {
+    private final double INVALID_VALUE = -10.0;
+
     private String rawMessage;
     private String action;
     private int iteration;
@@ -30,6 +32,12 @@ public class MessageHandler {
         iteration   = Integer.parseInt(parts[1]);
         dra         = Integer.parseInt(parts[2]);
         timestamp   = new Timestamp(Long.parseLong(parts[3]));
+
+        for(int i = 4; i < parts.length-1; i++){
+            if(parts[i] == "--"){
+                parts[i] = "" + INVALID_VALUE;
+            }
+        }
 
         minute1.add(Double.parseDouble(parts[4]));
         minute1.add(Double.parseDouble(parts[5]));
