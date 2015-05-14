@@ -11,6 +11,8 @@ public class Main {
 
     static ArrayList<String> sensor1 = new ArrayList<String>();
     static ArrayList<String> sensor2 = new ArrayList<String>();
+    private final static double NO_RETURN_FROM_VARIANT = -1.0;
+    private final static double INVALID_HASH = -2.0;
 
     public static void main(String[] args) {
         System.out.println("Modulo Principal");
@@ -57,7 +59,7 @@ public class Main {
                 //socketv3 = new Socket(address, port3);
                 //socketv3.setSoTimeout(10000);
 
-                Thread.sleep(2000);
+                Thread.sleep(1000);
 
             } catch (SocketException e) {
                 //e.printStackTrace();
@@ -104,7 +106,7 @@ public class Main {
             // Tem que haver valores para completar a iteração (6 por cada iteração)
             if(3* iterator + 3 < sensor1.size()){
                 String message = generatePutData(iterator,dra);
-                System.out.println("[Main]A enviar info de iteracao " + iterator + " e dra a " + dra);
+                System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator + " e dra a " + dra);
 
                 String sendBufString = message;
 
@@ -113,7 +115,7 @@ public class Main {
                 //outToServerV2.println(sendBufString);
             }
             else{
-                System.out.println("[Main]Execução Terminou - Não há mais valores para avaliar");
+                System.out.println("[Main]["+iterator+"]Execução Terminou - Não há mais valores para avaliar");
                 outToServerV1.println("end");
                 //outToServerV2.println("end");
                 //outToServerV3.println("end");
@@ -137,24 +139,27 @@ public class Main {
                 //String receivedV2 = inFromServerV2.readLine();
                 //String receivedV3 = inFromServerV3.readLine();
 
-                System.out.println("[Main]Recebi de V1: " + receivedV1);
-                //System.out.println("[Main] Recebi de V2: " + receivedV2);
-                //System.out.println("[Main] Recebi de V3: " + receivedV3);
+                System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+                //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
+                //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
 
                 // VOTADOR
                 ArrayList<Double> results = new ArrayList<Double>();
-                // Verifica Hash e retorn o valor, se hash for incorrecta devolve -1
-                double resultV1 = verifyResponse(receivedV1);
-                if(resultV1 != -1){ results.add(resultV1);} else{ System.out.println("[Main]Valor recebido da V1 inválido");}
-                //if(resultV2 != -1){ results.add(resultV2);} else{ System.out.println("[Main]Valor recebido da V2inválido");}
-                //if(resultV3 != -1){ results.add(resultV3);} else{ System.out.println("[Main]Valor recebido da V3 inválido");}
+                // Verifica Hash e retorn o valor, se hash for incorrecta devolve -2
+                double resultV1 = verifyResponse(receivedV1,1);
+                //double resultV2 = verifyResponse(receivedV2,2);
+                //double resultV3 = verifyResponse(receivedV3,3);
+
+                if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
+                //if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
+                //if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
 
                 Voter v = new Voter(results);
                 if(v.getConsensus()){
-                    System.out.println("[Main]Vai ser administrado o valor " + v.getVotingResult());
+                    System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(v.getVotingResult()));
                 }
                 else{
-                    System.out.println("[Main]Não houve consenso. Vai se recorrer a DRA");
+                    System.out.println("[Main]["+iterator+"]Não houve consenso. Vai se recorrer a DRA");
                     // DRA
                     dra = 1;
                     // Enviar mensagens com dados DRA
@@ -162,36 +167,39 @@ public class Main {
                     outToServerV1.println(message);
                     //outToServerV2.println("end");
                     //outToServerV3.println("end");
-                    System.out.println("[Main]A enviar info de iteracao " + iterator + " e dra a " + dra);
+                    System.out.println("[Main]["+iterator+"]A enviar informação de iteracao " + iterator);
 
                     // Receção de dados com DRA
                     receivedV1 = inFromServerV1.readLine();
                     //receivedV2 = inFromServerV2.readLine();
                     //receivedV3 = inFromServerV3.readLine();
-                    System.out.println("[Main]Recebi de V1: " + receivedV1);
-                    //System.out.println("[Main] Recebi de V2: " + receivedV2);
-                    //System.out.println("[Main] Recebi de V3: " + receivedV3);
+                    System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+                    //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
+                    //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
                     ArrayList<Double> resultsDRA = new ArrayList<Double>();
 
                     // Verifica Hash e retorn o valor, se hash for incorrecta devolve -1
-                    resultV1 = verifyResponse(receivedV1);
-                    if(resultV1 != -1){ resultsDRA.add(resultV1);} else{ System.out.println("[Main]Valor recebido da V1 inválido");}
-                    //if(resultV2 != -1){ resultsDRA.add(resultV2);} else{ System.out.println("[Main]Valor recebido da V2inválido");}
-                    //if(resultV3 != -1){ resultsDRA.add(resultV3);} else{ System.out.println("[Main]Valor recebido da V3 inválido");}
+                    resultV1 = verifyResponse(receivedV1,1);
+                    //resultV2 = verifyResponse(receivedV2,3);
+                    //resultV3 = verifyResponse(receivedV3,2);
+
+                    if(resultV1 != -1){ resultsDRA.add(resultV1);} else{ System.out.println("[Main]["+iterator+"]Variante 1 não chegou a um valor.");}
+                    //if(resultV2 != -1){ resultsDRA.add(resultV2);} else{ System.out.println("[Main]["+iterator+"]Variante 2 não chegou a um valor.");}
+                    //if(resultV3 != -1){ resultsDRA.add(resultV3);} else{ System.out.println("[Main]["+iterator+"]Variante 3 não chegou a um valor."");}
 
                     // Nova Votacao
                     Voter vDRA = new Voter(resultsDRA);
                     if(vDRA.getConsensus()){
                         double revertedValue = revertDRA(vDRA.getVotingResult());
-                        System.out.println("[Main]Vai ser administrado o valor " + revertedValue);
+                        System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(revertedValue));
                     }
                     else{
-                        System.out.println("[Main]Não houve consenso. Sistema não obteve resposta para a iteração atual");
+                        System.out.println("[Main]["+iterator+"]Não houve consenso. Sistema não obteve resposta para a iteração atual");
                     }
                 }
 
-                int delay = 4;
-                System.out.println("[Main]À espera "+ delay + " segundos até a próxima iteração");
+                int delay = 2;
+                System.out.println("[Main]["+iterator+"]À espera "+ delay + " segundos até a próxima iteração");
                 Thread.sleep(delay * 1000);
 
             } catch (IOException | InterruptedException e) {
@@ -210,7 +218,7 @@ public class Main {
         return value;
     }
 
-    public static double verifyResponse(String response){
+    public static double verifyResponse(String response, int v){
         String[] parts = response.split(" ");
         String action   = parts[0];
         String iteration= parts[1];
@@ -222,11 +230,12 @@ public class Main {
         String comparable = hashString(receivedStr);
 
         if(comparable.equals(hash)){
-            System.out.println("\tHash da resposta verificada com resultado " + result);
+            System.out.println("\t[MessageHandler]["+v+"]Hash da resposta verificada com resultado " + result);
             return Double.parseDouble(result);
         }
         else{
-            return -1.0;
+            System.out.println("\t[MessageHandler]["+v+"]Hash da resposta inválida");
+            return INVALID_HASH;
         }
     }
 

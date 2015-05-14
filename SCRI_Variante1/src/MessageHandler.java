@@ -34,7 +34,7 @@ public class MessageHandler {
         timestamp   = new Timestamp(Long.parseLong(parts[3]));
 
         for(int i = 4; i < parts.length-1; i++){
-            if(parts[i] == "--"){
+            if(parts[i].equals("--")){
                 parts[i] = "" + INVALID_VALUE;
             }
         }

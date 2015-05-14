@@ -12,7 +12,7 @@ public class Voter {
 
     Voter(ArrayList<Double> results){
         consensus = false;
-        tolerance = 0.01;
+        tolerance = 1.0;
         receivedValues = results;
         elect();
         // Forçar para testar logica do two pass adj
@@ -44,14 +44,14 @@ public class Voter {
 
         }
         else if(receivedValues.size() == 1){
-            // TODO: É assim que o formal majority voter faz?
+            // TODO: Tá dinamico porque nao temos mais variantes para fazer para ja
             // Se só há 1 valor está a seleccionar esse
             consensus = true;
             votingResult = receivedValues.get(0);
             return;
         }
         else{
-            System.out.println("\t Nao foram obtidos dados suficentes para avaliar. Vai ser retornado valor 0.00");
+            System.out.println("\t[Voter]Nao foram obtidos dados suficentes para avaliar. Retornado NULL");
             consensus = true;
             votingResult = 0.0;
             return;

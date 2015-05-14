@@ -26,6 +26,7 @@ public class Main {
 
                 if(message.equals("end")){
                     System.out.println("[V1]Conexão terminou - Não há mais valores para avaliar");
+                    System.out.println("[V1-out]ack");
                     out.println("ack");
                     return;
                 }
