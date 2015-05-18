@@ -29,21 +29,10 @@ public class Device {
         return minutes.get(minute);
     }
 
-    public void addDRAMinute(ArrayList<Double> values){
-        for(int i = 0; i < values.size(); i++){
-            draValues.add(values.get(i));
-        }
-    }
-
-    public void discardOldDRAValues(){
-        draValues.clear();
-    }
-
     public boolean addMinute(ArrayList<Double> minuteValues, int minute, int iteration){
         ArrayList<Double> values = avaliateInput(minuteValues);
         minutes.put(minute, values);
         history.put(minute + 3*iteration , values);
-        System.out.println("INSERIU VALORES PARA MIN " + (minute + 3*iteration ));
         return avaliateSensors();
     }
 

@@ -13,7 +13,6 @@ public class MessageHandler {
     private String rawMessage;
     private String action;
     private int iteration;
-    private int dra;
     private Timestamp timestamp;
     public ArrayList<Double> minute1 = new ArrayList<Double>();
     public ArrayList<Double> minute2 = new ArrayList<Double>();
@@ -22,7 +21,7 @@ public class MessageHandler {
     public MessageHandler(String message){
 
         String[] parts = message.split(" ");
-        if (parts.length != 11){
+        if (parts.length != 10){
             System.out.println("\t[Message Handler] Mensagem inválida - Faltam elementos");
             return;
         }
@@ -30,25 +29,24 @@ public class MessageHandler {
         rawMessage  = message;
         action      = parts[0];
         iteration   = Integer.parseInt(parts[1]);
-        dra         = Integer.parseInt(parts[2]);
-        timestamp   = new Timestamp(Long.parseLong(parts[3]));
+        timestamp   = new Timestamp(Long.parseLong(parts[2]));
 
-        for(int i = 4; i < parts.length-1; i++){
+        for(int i = 3; i < parts.length-1; i++){
             if(parts[i].equals("--")){
                 parts[i] = "" + INVALID_VALUE;
             }
         }
 
+        minute1.add(Double.parseDouble(parts[3]));
         minute1.add(Double.parseDouble(parts[4]));
-        minute1.add(Double.parseDouble(parts[5]));
 
+        minute2.add(Double.parseDouble(parts[5]));
         minute2.add(Double.parseDouble(parts[6]));
-        minute2.add(Double.parseDouble(parts[7]));
 
+        minute3.add(Double.parseDouble(parts[7]));
         minute3.add(Double.parseDouble(parts[8]));
-        minute3.add(Double.parseDouble(parts[9]));
 
-        String reveivedHash = parts[10];
+        String reveivedHash = parts[9];
 
         if(verifyHashReceived(reveivedHash)){
             System.out.println("\t[Message Handler] Hash verificada com sucesso");
@@ -60,7 +58,7 @@ public class MessageHandler {
     private boolean verifyHashReceived(String receivedHash){
 
         String storedData = "";
-        storedData += action + " " + getIteration() + " " + getDra() + " " + getTimestamp().getTime() + " ";
+        storedData += action + " " + getIteration() + " " + getTimestamp().getTime() + " ";
         storedData += minute1.get(0) + " " + minute1.get(1) + " ";
         storedData += minute2.get(0) + " " + minute2.get(1) + " ";
         storedData += minute3.get(0) + " " + minute3.get(1);
@@ -81,7 +79,6 @@ public class MessageHandler {
         String res = "";
         res+= "putresult ";
         res+= this.iteration + " ";
-        res+= dra + " ";
         res+= value;
 
         String hashed = hashString(res);
@@ -119,10 +116,6 @@ public class MessageHandler {
 
     public int getIteration() {
         return iteration;
-    }
-
-    public int getDra() {
-        return dra;
     }
 
     public Timestamp getTimestamp() {

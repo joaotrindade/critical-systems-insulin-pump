@@ -12,12 +12,29 @@ public class Main {
     static ArrayList<String> sensor1 = new ArrayList<String>();
     static ArrayList<String> sensor2 = new ArrayList<String>();
     private final static double NO_RETURN_FROM_VARIANT = -1.0;
+    private final static double NULL_RESULT_FROM_VOTER = -1.0;
     private final static double INVALID_HASH = -2.0;
 
     public static void main(String[] args) {
         System.out.println("Modulo Principal");
+        String outputFilename;
+        String inputFilename;
 
-        readFile();
+        if(args.length == 2){
+            inputFilename = args[0];
+            outputFilename = args[1];
+        }
+        else if(args.length == 1){
+            inputFilename = args[0];
+            outputFilename = "output_"+ new Date().getTime();
+        }
+        else{
+            inputFilename = "input.txt";
+            outputFilename = "output_"+ new Date().getTime();
+        }
+
+
+        readFile(inputFilename);
         //BufferedReader Systemin =new BufferedReader(new InputStreamReader(System.in));
         InetAddress address = null;
         Socket socketv1 = null;
@@ -105,8 +122,8 @@ public class Main {
 
             // Tem que haver valores para completar a iteração (6 por cada iteração)
             if(3* iterator + 3 < sensor1.size()){
-                String message = generatePutData(iterator,dra);
-                System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator + " e dra a " + dra);
+                String message = generatePutData(iterator);
+                System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator);
 
                 String sendBufString = message;
 
@@ -139,7 +156,7 @@ public class Main {
                 //String receivedV2 = inFromServerV2.readLine();
                 //String receivedV3 = inFromServerV3.readLine();
 
-                System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+                //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
                 //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
                 //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
 
@@ -155,51 +172,16 @@ public class Main {
                 //if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
 
                 Voter v = new Voter(results);
-                if(v.getConsensus()){
+                if(v.getConsensus() && v.getVotingResult()!= NULL_RESULT_FROM_VOTER){
                     System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(v.getVotingResult()));
+                    writeToFile(outputFilename, String.valueOf(v.getVotingResult()));
                 }
                 else{
-                    System.out.println("[Main]["+iterator+"]Não houve consenso. Vai se recorrer a DRA");
-                    // DRA
-                    dra = 1;
-                    // Enviar mensagens com dados DRA
-                    String message = generatePutData(iterator,dra);
-                    outToServerV1.println(message);
-                    //outToServerV2.println("end");
-                    //outToServerV3.println("end");
-                    System.out.println("[Main]["+iterator+"]A enviar informação de iteracao " + iterator);
-
-                    // Receção de dados com DRA
-                    receivedV1 = inFromServerV1.readLine();
-                    //receivedV2 = inFromServerV2.readLine();
-                    //receivedV3 = inFromServerV3.readLine();
-                    System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
-                    //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
-                    //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
-                    ArrayList<Double> resultsDRA = new ArrayList<Double>();
-
-                    // Verifica Hash e retorn o valor, se hash for incorrecta devolve -1
-                    resultV1 = verifyResponse(receivedV1,1);
-                    //resultV2 = verifyResponse(receivedV2,3);
-                    //resultV3 = verifyResponse(receivedV3,2);
-
-                    if(resultV1 != -1){ resultsDRA.add(resultV1);} else{ System.out.println("[Main]["+iterator+"]Variante 1 não chegou a um valor.");}
-                    //if(resultV2 != -1){ resultsDRA.add(resultV2);} else{ System.out.println("[Main]["+iterator+"]Variante 2 não chegou a um valor.");}
-                    //if(resultV3 != -1){ resultsDRA.add(resultV3);} else{ System.out.println("[Main]["+iterator+"]Variante 3 não chegou a um valor."");}
-
-                    // Nova Votacao
-                    Voter vDRA = new Voter(resultsDRA);
-                    if(vDRA.getConsensus()){
-                        double revertedValue = revertDRA(vDRA.getVotingResult());
-                        System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(revertedValue));
-                    }
-                    else{
-                        System.out.println("[Main]["+iterator+"]Não houve consenso. Sistema não obteve resposta para a iteração atual");
-                    }
+                    writeToFile(outputFilename, "FAIL");
                 }
 
                 int delay = 2;
-                System.out.println("[Main]["+iterator+"]À espera "+ delay + " segundos até a próxima iteração");
+                //System.out.println("[Main]["+iterator+"]À espera "+ delay + " segundos até a próxima iteração");
                 Thread.sleep(delay * 1000);
 
             } catch (IOException | InterruptedException e) {
@@ -208,25 +190,19 @@ public class Main {
                 return;
             }
 
-
             iterator++;
         }
     }
 
-    public static double revertDRA(double value){
-        // TODO: revert dra function
-        return value;
-    }
 
     public static double verifyResponse(String response, int v){
         String[] parts = response.split(" ");
         String action   = parts[0];
         String iteration= parts[1];
-        String dra      = parts[2];
-        String result   = parts[3];
-        String hash     = parts[4];
+        String result   = parts[2];
+        String hash     = parts[3];
 
-        String receivedStr = action + " " + iteration + " " + dra + " " + result;
+        String receivedStr = action + " " + iteration + " " + result;
         String comparable = hashString(receivedStr);
 
         if(comparable.equals(hash)){
@@ -239,11 +215,25 @@ public class Main {
         }
     }
 
-    public static void readFile() {
+    public static void writeToFile(String filename, String value){
+
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(filename,true);
+            fw.write(value+"\n");
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public static void readFile(String filename) {
 
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new FileReader("SCRI_ModuloCentral/input.txt"));
+            br = new BufferedReader(new FileReader(filename));
             sensor1.add("0");
             sensor2.add("0");
             String line = br.readLine();
@@ -264,11 +254,10 @@ public class Main {
     }
 
 
-    public static String generatePutData(int iterator, int dra) {
+    public static String generatePutData(int iterator) {
         String res = "";
         res+= "putdata ";
         res+= iterator + " ";
-        res+= dra + " ";
 
         Timestamp ts = new Timestamp(new Date().getTime());
         res+= ts.getTime() + " ";

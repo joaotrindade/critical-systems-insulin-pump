@@ -33,21 +33,11 @@ public class Main {
 
                 MessageHandler mh = new MessageHandler(message);
                 double result = -1;
-                if(mh.getDra() == 0){
-                    device.addMinute(mh.minute1, 1, mh.getIteration());
-                    device.addMinute(mh.minute2, 2, mh.getIteration());
-                    device.addMinute(mh.minute3, 3, mh.getIteration());
-                    result = device.process();
-                }
-                else{
-                    // Nao guarda historico de valores DRA
-                    device.discardOldDRAValues();
-                    // Cada linha adiciona os 2 valores ArrayList
-                    device.addDRAMinute(mh.minute1);
-                    device.addDRAMinute(mh.minute2);
-                    device.addDRAMinute(mh.minute3);
-                    result = device.process();
-                }
+
+                device.addMinute(mh.minute1, 1, mh.getIteration());
+                device.addMinute(mh.minute2, 2, mh.getIteration());
+                device.addMinute(mh.minute3, 3, mh.getIteration());
+                result = device.process();
 
 
                 String response = mh.generateAnswer(result);

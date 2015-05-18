@@ -7,7 +7,7 @@ import java.util.Random;
 public class Voter {
     ArrayList<Double> receivedValues = new ArrayList<Double>();
     private boolean consensus;
-    private Double votingResult;
+    private int votingResult;
     private Double tolerance;
 
     Voter(ArrayList<Double> results){
@@ -15,8 +15,6 @@ public class Voter {
         tolerance = 1.0;
         receivedValues = results;
         elect();
-        // Forçar para testar logica do two pass adj
-        //consensus = false;
     }
 
     private void elect(){
@@ -39,21 +37,20 @@ public class Voter {
             // Seleccionar aleatoriamente do tamanho de feasible set.
             int indexF = r.nextInt(feasibleSet.size());
             consensus = true;
-            votingResult = feasibleSet.get(indexF);
+            votingResult = (int) Math.floor(feasibleSet.get(indexF));
             return;
 
         }
         else if(receivedValues.size() == 1){
-            // TODO: Tá dinamico porque nao temos mais variantes para fazer para ja
             // Se só há 1 valor está a seleccionar esse
             consensus = true;
-            votingResult = receivedValues.get(0);
+            votingResult = (int) Math.floor(receivedValues.get(0));
             return;
         }
         else{
             System.out.println("\t[Voter]Nao foram obtidos dados suficentes para avaliar. Retornado NULL");
             consensus = true;
-            votingResult = 0.0;
+            votingResult = -1;
             return;
 
         }
@@ -71,7 +68,7 @@ public class Voter {
         this.tolerance = tolerance;
     }
 
-    public Double getVotingResult() {
+    public int getVotingResult() {
         return votingResult;
     }
 }
