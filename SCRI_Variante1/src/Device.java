@@ -142,8 +142,7 @@ public class Device {
             System.out.println("\t[Device] Não deve ser injetada insulina - Glucose a descer (dg = "+ dg +")");
             return 0.0;
         }
-        else if(gluc3 >= 6.0 && dg >= -0.4 ){ //TODO Verificar com stor
-
+        else if(gluc3 >= 6.0 && dg >= -0.4 ){
 
             // Calculo das variações de glucose e numero de doses
             double ddg = (gluc2-gluc1) - dg;
@@ -163,7 +162,8 @@ public class Device {
             }
             this.currentInsulin = ndoses + 0.9 * this.currentInsulin;
             System.out.println("\t[Device] Vai ser injetada insulina - " + ndoses + " doses");
-            return ndoses;
+
+            return acceptanceTest(ndoses);
         }
         else{
             System.out.println("\t[Device] Nao foi possível chegar a uma decisão. Demasiados inputs inválidos");
@@ -171,6 +171,15 @@ public class Device {
         }
     }
 
+    private double acceptanceTest(double value){
+        if(value < 0){
+            return -1;
+        }
+        if(value >= 10){
+            return 5; // Numero maximo de doses por iteração
+        }
+        return value;
+    }
     private double calcDoses(double g, double dg, double ddg, double ins){ return 0.8*g + 0.2 * dg + 0.5*ddg - ins; }
     private double gluc(double entry){
         return -3.4 + 1.354 * entry + 1.545 * Math.tan( Math.pow(entry, 0.25));
