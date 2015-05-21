@@ -3,6 +3,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Utilizador on 02/05/2015.
@@ -79,6 +80,7 @@ public class MessageHandler {
         String res = "";
         res+= "putresult ";
         res+= this.iteration + " ";
+        res+= new Timestamp(new Date().getTime()).getTime() + " ";
         res+= value;
 
         String hashed = hashString(res);

@@ -125,6 +125,7 @@ public class Main {
                 String message = generatePutData(iterator);
                 System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator);
 
+                System.out.println(message);
                 String sendBufString = message;
 
                 outToServerV1.println(sendBufString);
@@ -156,13 +157,14 @@ public class Main {
                 //String receivedV2 = inFromServerV2.readLine();
                 //String receivedV3 = inFromServerV3.readLine();
 
-                //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+                System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
                 //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
                 //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
 
                 // VOTADOR
                 ArrayList<Double> results = new ArrayList<Double>();
                 // Verifica Hash e retorn o valor, se hash for incorrecta devolve -2
+
                 double resultV1 = verifyResponse(receivedV1,1);
                 //double resultV2 = verifyResponse(receivedV2,2);
                 //double resultV3 = verifyResponse(receivedV3,3);
@@ -199,10 +201,11 @@ public class Main {
         String[] parts = response.split(" ");
         String action   = parts[0];
         String iteration= parts[1];
-        String result   = parts[2];
-        String hash     = parts[3];
+        String timestamp= parts[2];
+        String result   = parts[3];
+        String hash     = parts[4];
 
-        String receivedStr = action + " " + iteration + " " + result;
+        String receivedStr = action + " " + iteration + " " + timestamp + " " + result;
         String comparable = hashString(receivedStr);
 
         if(comparable.equals(hash)){
