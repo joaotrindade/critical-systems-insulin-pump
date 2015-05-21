@@ -37,6 +37,7 @@ public class Main {
                 device.addMinute(mh.minute1, 1, mh.getIteration());
                 device.addMinute(mh.minute2, 2, mh.getIteration());
                 device.addMinute(mh.minute3, 3, mh.getIteration());
+                device.setCurrentInsulin(mh.getCurrentInsulin());
                 result = device.process();
 
 

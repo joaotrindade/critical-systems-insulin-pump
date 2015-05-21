@@ -18,11 +18,12 @@ public class MessageHandler {
     public ArrayList<Double> minute1 = new ArrayList<Double>();
     public ArrayList<Double> minute2 = new ArrayList<Double>();
     public ArrayList<Double> minute3 = new ArrayList<Double>();
+    private double currentInsulin;
 
     public MessageHandler(String message){
 
         String[] parts = message.split(" ");
-        if (parts.length != 10){
+        if (parts.length != 11){
             System.out.println("\t[Message Handler] Mensagem inválida - Faltam elementos");
             return;
         }
@@ -47,7 +48,9 @@ public class MessageHandler {
         minute3.add(Double.parseDouble(parts[7]));
         minute3.add(Double.parseDouble(parts[8]));
 
-        String reveivedHash = parts[9];
+        currentInsulin = Double.parseDouble(parts[9]);
+
+        String reveivedHash = parts[10];
 
         if(verifyHashReceived(reveivedHash)){
             System.out.println("\t[Message Handler] Hash verificada com sucesso");
@@ -122,5 +125,9 @@ public class MessageHandler {
 
     public Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    public double getCurrentInsulin() {
+        return currentInsulin;
     }
 }

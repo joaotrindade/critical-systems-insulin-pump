@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,16 +10,16 @@ public class Device {
     private final double DOMAIN_X_MAX = 6.08;
     HashMap< Integer, ArrayList<Double> > minutes;
     HashMap< Integer, ArrayList<Double> > history;
-    double currentInsulin;
     ArrayList<Double> draValues = new ArrayList<Double>();
-    int sensor1ErrorCounter;
-    int sensor2ErrorCounter;
+    private int sensor1ErrorCounter;
+    private int sensor2ErrorCounter;
+    private double currentInsulin = 0.0;
 
 
     public Device(){
         minutes = new HashMap<Integer, ArrayList<Double>>();
         history = new HashMap<Integer, ArrayList<Double>>();
-        currentInsulin = 0.0;
+
         sensor1ErrorCounter = 0;
         sensor2ErrorCounter = 0;
     }
@@ -83,7 +82,7 @@ public class Device {
             if( Math.abs(minuteValues.get(0) - minuteValues.get(1)) >= 1.5 ){
                 System.out.println("\t [Device] Demasiada descrepancia de valores("+ minuteValues.get(0) + " em relacao a " + minuteValues.get(0) + ").");
                 minuteValues.clear();
-                // TODO Escolher qual usar atraves dos valores do historico
+                // Escolher qual valor através do historico - deixar para outra
             }
         }
 
@@ -146,7 +145,7 @@ public class Device {
 
             // Calculo das variações de glucose e numero de doses
             double ddg = (gluc2-gluc1) - dg;
-            double doses = calcDoses(gluc3,dg,ddg,currentInsulin);
+            double doses = calcDoses(gluc3,dg,ddg, getCurrentInsulin());
             // Round das doses a injectar
             int ndoses = (int) Math.round(doses);
 
@@ -160,7 +159,7 @@ public class Device {
             if(ndoses == 0){
                 ndoses = 1;
             }
-            this.currentInsulin = ndoses + 0.9 * this.currentInsulin;
+            this.setCurrentInsulin(ndoses + 0.9 * this.getCurrentInsulin());
             System.out.println("\t[Device] Vai ser injetada insulina - " + ndoses + " doses");
 
             return acceptanceTest(ndoses);
@@ -183,5 +182,13 @@ public class Device {
     private double calcDoses(double g, double dg, double ddg, double ins){ return 0.8*g + 0.2 * dg + 0.5*ddg - ins; }
     private double gluc(double entry){
         return -3.4 + 1.354 * entry + 1.545 * Math.tan( Math.pow(entry, 0.25));
+    }
+
+    public double getCurrentInsulin() {
+        return currentInsulin;
+    }
+
+    public void setCurrentInsulin(double currentInsulin) {
+        this.currentInsulin = currentInsulin;
     }
 }

@@ -64,6 +64,7 @@ public class Main {
 
         Boolean connected = false;
         int tentativa = 0;
+
         while(!connected){
             tentativa++;
             try {
@@ -115,14 +116,14 @@ public class Main {
 
 
         int iterator = 0;
+        double currentInsulin = 0.0;
 
         while(true)
         {
-            int dra = 0;
 
             // Tem que haver valores para completar a iteração (6 por cada iteração)
             if(3* iterator + 3 < sensor1.size()){
-                String message = generatePutData(iterator);
+                String message = generatePutData(iterator, currentInsulin);
                 System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator);
 
                 System.out.println(message);
@@ -177,6 +178,10 @@ public class Main {
                 if(v.getConsensus() && v.getVotingResult()!= NULL_RESULT_FROM_VOTER){
                     System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(v.getVotingResult()));
                     writeToFile(outputFilename, String.valueOf(v.getVotingResult()));
+
+                    // Atualiza valor da insulina
+
+                    currentInsulin = currentInsulin + 0.9 * v.getVotingResult();
                 }
                 else{
                     writeToFile(outputFilename, "FAIL");
@@ -256,8 +261,7 @@ public class Main {
 
     }
 
-
-    public static String generatePutData(int iterator) {
+    public static String generatePutData(int iterator, double currentInsulin) {
         String res = "";
         res+= "putdata ";
         res+= iterator + " ";
@@ -272,7 +276,9 @@ public class Main {
         res+= sensor2.get(3*iterator + 2) + " ";
 
         res+= sensor1.get(3*iterator + 3) + " ";
-        res+= sensor2.get(3*iterator + 3);
+        res+= sensor2.get(3*iterator + 3) + " ";
+
+        res+= currentInsulin;
 
         String hashed = hashString(res);
 
