@@ -57,7 +57,7 @@ public class Main {
         try {
             address = InetAddress.getByName("127.0.0.1");
         } catch (UnknownHostException e1) {
-            System.out.println("Erro: Endereço de rede desconhecido");
+            System.out.println("Erro: Endereco de rede desconhecido");
             e1.printStackTrace();
             return;
         }
@@ -81,10 +81,10 @@ public class Main {
 
             } catch (SocketException e) {
                 //e.printStackTrace();
-                System.out.println("Socket não encontrado, a tentar conectar novamente");
+                System.out.println("Socket nao encontrado, a tentar conectar novamente");
                 continue;
             } catch (IOException | InterruptedException e) {
-                System.out.println("Erro: Erro de ligação ou interrupção da thread");
+                System.out.println("Erro: Erro de ligacao ou interrupcao da thread");
                 e.printStackTrace();
                 return;
             }
@@ -107,7 +107,7 @@ public class Main {
             */
 
         } catch (IOException e) {
-            System.out.println("Erro: Ligação ao socket.");
+            System.out.println("Erro: Ligacao ao socket.");
             e.printStackTrace();
             return;
         }
@@ -134,7 +134,7 @@ public class Main {
                 //outToServerV2.println(sendBufString);
             }
             else{
-                System.out.println("[Main]["+iterator+"]Execução Terminou - Não há mais valores para avaliar");
+                System.out.println("[Main]["+iterator+"]Execucao Terminou - Nao ha mais valores para avaliar");
                 outToServerV1.println("end");
                 //outToServerV2.println("end");
                 //outToServerV3.println("end");
@@ -188,11 +188,11 @@ public class Main {
                 }
 
                 int delay = 2;
-                //System.out.println("[Main]["+iterator+"]À espera "+ delay + " segundos até a próxima iteração");
+                //System.out.println("[Main]["+iterator+"]Em espera "+ delay + " segundos ate a proxima iteracao");
                 Thread.sleep(delay * 1000);
 
             } catch (IOException | InterruptedException e) {
-                System.out.println("Erro: Erro de ligação ou interrupção");
+                System.out.println("Erro: Erro de ligacao ou interrupcao");
                 e.printStackTrace();
                 return;
             }
@@ -218,7 +218,7 @@ public class Main {
             return Double.parseDouble(result);
         }
         else{
-            System.out.println("\t[MessageHandler]["+v+"]Hash da resposta inválida");
+            System.out.println("\t[MessageHandler]["+v+"]Hash da resposta invalida");
             return INVALID_HASH;
         }
     }
@@ -254,7 +254,7 @@ public class Main {
             br.close();
             return;
         } catch (IOException e) {
-            System.out.println("Erro: Ficheiro não existe ou não está acessivel.");
+            System.out.println("Erro: Ficheiro nao existe ou nao esta acessivel.");
             e.printStackTrace();
             return;
         }
@@ -296,7 +296,7 @@ public class Main {
             return convertByteArrayToHexString(hashedBytes);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             //TODO: Este erro precisa de melhor handling
-            System.out.println("Erro: Erro na criação da hash da mensagem.");
+            System.out.println("Erro: Erro na criacao da hash da mensagem.");
             e.printStackTrace();
             return null;
         }
