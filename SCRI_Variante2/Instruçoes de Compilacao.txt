@@ -1,0 +1,4 @@
+1 - Abrir Developer Command Prompt for Visual Studio (Menu Inicial -> Visual Studio -> Visual Studio Tools -> "Developer Command Prompt for VS2013"
+2 - Navegar para a pasta com o ficheiro Main.cpp
+3 - Introduzir> cl Main.cpp
+4 - É criado o executavel Main.exe

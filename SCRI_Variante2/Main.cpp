@@ -1,8 +1,15 @@
+// Need to link with Ws2_32.lib
+#pragma comment (lib, "Ws2_32.lib")
+#pragma comment(lib, "crypt32.lib")
+#pragma comment (lib, "Advapi32.lib")
+#pragma comment( linker, "/subsystem:console" )
+// #pragma comment (lib, "Mswsock.lib")
 
-
+#define NOCRYPT
 #define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
+#include <Windows.h>
+#include <Wincrypt.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
@@ -12,7 +19,6 @@
 #include <sstream>
 #include <algorithm>
 #include <ctype.h>
-#include <Wincrypt.h>
 #include <deque>
 #include <vector>
 #include <cstring>
@@ -20,9 +26,7 @@
 #include <locale>
 #include<ctime>
 
-// Need to link with Ws2_32.lib
-#pragma comment (lib, "Ws2_32.lib")
-// #pragma comment (lib, "Mswsock.lib")
+
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "6791"
@@ -34,9 +38,64 @@ using namespace std;
 deque<double> sensor1_data;
 deque<double> sensor2_data;
 enum HashType{ HashSha1, HashMd5, HashSha256 };
-string GetHashText(const void * data, const size_t data_size, HashType hashType);
+
 #define TICKS_PER_SECOND 10000000
 #define EPOCH_DIFFERENCE 11644473600LL
+
+string GetHashText(const void * data, const size_t data_size, HashType hashType)
+{
+	HCRYPTPROV hProv = NULL;
+
+	if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
+		return "";
+	}
+
+	BOOL hash_ok = FALSE;
+	HCRYPTPROV hHash = NULL;
+	switch (hashType) {
+	case HashSha1: hash_ok = CryptCreateHash(hProv, CALG_SHA1, 0, 0, &hHash); break;
+	case HashMd5: hash_ok = CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash); break;
+	case HashSha256: hash_ok = CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash); break;
+	}
+
+	if (!hash_ok) {
+		CryptReleaseContext(hProv, 0);
+		return "";
+	}
+
+	if (!CryptHashData(hHash, static_cast<const BYTE *>(data), data_size, 0)) {
+		CryptDestroyHash(hHash);
+		CryptReleaseContext(hProv, 0);
+		return "";
+	}
+
+	DWORD cbHashSize = 0, dwCount = sizeof(DWORD);
+	if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE *)&cbHashSize, &dwCount, 0)) {
+		CryptDestroyHash(hHash);
+		CryptReleaseContext(hProv, 0);
+		return "";
+	}
+
+	std::vector<BYTE> buffer(cbHashSize);
+	if (!CryptGetHashParam(hHash, HP_HASHVAL, reinterpret_cast<BYTE*>(&buffer[0]), &cbHashSize, 0)) {
+		CryptDestroyHash(hHash);
+		CryptReleaseContext(hProv, 0);
+		return "";
+	}
+
+	std::ostringstream oss;
+
+	for (std::vector<BYTE>::const_iterator iter = buffer.begin(); iter != buffer.end(); ++iter) {
+		oss.fill('0');
+		oss.width(2);
+		oss << std::hex << static_cast<const int>(*iter);
+	}
+
+	CryptDestroyHash(hHash);
+	CryptReleaseContext(hProv, 0);
+	return oss.str();
+}
+
 
 double getDoubleNumber(string input)
 {
@@ -204,62 +263,6 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 	return sentence;
 }
 
-
-
-
-string GetHashText(const void * data, const size_t data_size, HashType hashType)
-{
-	HCRYPTPROV hProv = NULL;
-
-	if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
-		return "";
-	}
-
-	BOOL hash_ok = FALSE;
-	HCRYPTPROV hHash = NULL;
-	switch (hashType) {
-	case HashSha1: hash_ok = CryptCreateHash(hProv, CALG_SHA1, 0, 0, &hHash); break;
-	case HashMd5: hash_ok = CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash); break;
-	case HashSha256: hash_ok = CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash); break;
-	}
-
-	if (!hash_ok) {
-		CryptReleaseContext(hProv, 0);
-		return "";
-	}
-
-	if (!CryptHashData(hHash, static_cast<const BYTE *>(data), data_size, 0)) {
-		CryptDestroyHash(hHash);
-		CryptReleaseContext(hProv, 0);
-		return "";
-	}
-
-	DWORD cbHashSize = 0, dwCount = sizeof(DWORD);
-	if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE *)&cbHashSize, &dwCount, 0)) {
-		CryptDestroyHash(hHash);
-		CryptReleaseContext(hProv, 0);
-		return "";
-	}
-
-	std::vector<BYTE> buffer(cbHashSize);
-	if (!CryptGetHashParam(hHash, HP_HASHVAL, reinterpret_cast<BYTE*>(&buffer[0]), &cbHashSize, 0)) {
-		CryptDestroyHash(hHash);
-		CryptReleaseContext(hProv, 0);
-		return "";
-	}
-
-	std::ostringstream oss;
-
-	for (std::vector<BYTE>::const_iterator iter = buffer.begin(); iter != buffer.end(); ++iter) {
-		oss.fill('0');
-		oss.width(2);
-		oss << std::hex << static_cast<const int>(*iter);
-	}
-
-	CryptDestroyHash(hHash);
-	CryptReleaseContext(hProv, 0);
-	return oss.str();
-}
 
 int __cdecl main(void)
 {
