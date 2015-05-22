@@ -51,8 +51,8 @@ public class Main {
 
         byte[] recBuf = new byte[1024];
 
-        int port1 = 6791;
-        int port2 = 6792;
+        int port1 = 6792;
+        int port2 = 6791;
         int port3 = 6793;
 
         try {
