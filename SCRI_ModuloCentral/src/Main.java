@@ -43,8 +43,9 @@ public class Main {
 
         PrintWriter outToServerV1;
         BufferedReader inFromServerV1;
-        /*PrintWriter outToServerV2;
+        PrintWriter outToServerV2;
         BufferedReader inFromServerV2;
+        /*
         PrintWriter outToServerV3;
         BufferedReader inFromServerV3; */
 
@@ -71,8 +72,8 @@ public class Main {
                 socketv1 = new Socket(address, port1);
                 socketv1.setSoTimeout(10000);
 
-                //socketv2 = new Socket(address, port2);
-                //socketv2.setSoTimeout(10000);
+                socketv2 = new Socket(address, port2);
+                socketv2.setSoTimeout(10000);
 //
                 //socketv3 = new Socket(address, port3);
                 //socketv3.setSoTimeout(10000);
@@ -99,9 +100,10 @@ public class Main {
         try {
             outToServerV1= new PrintWriter(socketv1.getOutputStream(),true);
             inFromServerV1 = new BufferedReader(new InputStreamReader(socketv1.getInputStream()));
-            /*
+
             outToServerV2 = new PrintWriter(socketv2.getOutputStream(),true);
             inFromServerV2 = new BufferedReader(new InputStreamReader(socketv2.getInputStream()));
+            /*
             outToServerV3 = new PrintWriter(socketv3.getOutputStream(),true);
             inFromServerV3 = new BufferedReader(new InputStreamReader(socketv3.getInputStream()));
             */
@@ -126,21 +128,20 @@ public class Main {
                 String message = generatePutData(iterator, currentInsulin);
                 System.out.println("[Main]["+iterator+"]A enviar info de iteracao " + iterator);
 
-                System.out.println(message);
                 String sendBufString = message;
 
                 outToServerV1.println(sendBufString);
-                //outToServerV2.println(sendBufString);
+                outToServerV2.println(sendBufString);
                 //outToServerV2.println(sendBufString);
             }
             else{
                 System.out.println("[Main]["+iterator+"]Execucao Terminou - Nao ha mais valores para avaliar");
                 outToServerV1.println("end");
-                //outToServerV2.println("end");
+                outToServerV2.println("end");
                 //outToServerV3.println("end");
                 try {
                     String receivedV1 = inFromServerV1.readLine();
-                    //String receivedV2 = inFromServerV2.readLine();
+                    String receivedV2 = inFromServerV2.readLine();
                     //String receivedV3 = inFromServerV3.readLine();
 
                     if (receivedV1.equals("ack")) {
@@ -155,25 +156,29 @@ public class Main {
             try {
 
                 String receivedV1 = inFromServerV1.readLine();
-                //String receivedV2 = inFromServerV2.readLine();
+                String receivedV2 = inFromServerV2.readLine();
                 //String receivedV3 = inFromServerV3.readLine();
 
-                System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
-                //System.out.println("[Main]["+iterator+"] Recebi de V2: " + receivedV2);
-                //System.out.println("[Main]["+iterator+"] Recebi de V3: " + receivedV3);
+                //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+                //System.out.println("[Main]["+iterator+"]Recebi de V2: " + receivedV2);
+                //System.out.println("[Main]["+iterator+"]Recebi de V3: " + receivedV3);
 
                 // VOTADOR
                 ArrayList<Double> results = new ArrayList<Double>();
                 // Verifica Hash e retorn o valor, se hash for incorrecta devolve -2
 
                 double resultV1 = verifyResponse(receivedV1,1);
-                //double resultV2 = verifyResponse(receivedV2,2);
+                double resultV2 = verifyResponse(receivedV2,2);
                 //double resultV3 = verifyResponse(receivedV3,3);
-
+                results.clear();
                 if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
-                //if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
+                if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
                 //if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
-
+                System.out.print("[Main]["+iterator+"]Vai ser realizada a votacao com valores ");
+                for(int i = 0; i < results.size(); i++){
+                    System.out.print(results.get(i) + " ");
+                }
+                System.out.println();
                 Voter v = new Voter(results);
                 if(v.getConsensus() && v.getVotingResult()!= NULL_RESULT_FROM_VOTER){
                     System.out.println("[Main]["+iterator+"]Vai ser administrado o valor " + Math.round(v.getVotingResult()));
@@ -184,6 +189,11 @@ public class Main {
                     currentInsulin = currentInsulin + 0.9 * v.getVotingResult();
                 }
                 else{
+                    System.out.print("[Main]["+iterator+"]Nao houve consenso. Valores recebidos: ");
+                    for(int i = 0; i < results.size(); i++){
+                        System.out.print(results.get(i) + " ");
+                    }
+                    System.out.println("");
                     writeToFile(outputFilename, "FAIL");
                 }
 
@@ -196,7 +206,7 @@ public class Main {
                 e.printStackTrace();
                 return;
             }
-
+            System.out.println("[Main]----- Fim da Iteracao " + iterator + "-----");
             iterator++;
         }
     }
@@ -204,6 +214,11 @@ public class Main {
 
     public static double verifyResponse(String response, int v){
         String[] parts = response.split(" ");
+
+        if(parts.length != 5){
+            System.out.println("\t[MessageHandler]["+v+"]Nao tem mensagem completa");
+            return -1.0;
+        }
         String action   = parts[0];
         String iteration= parts[1];
         String timestamp= parts[2];
