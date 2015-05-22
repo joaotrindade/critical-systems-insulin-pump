@@ -18,6 +18,7 @@
 #include <cstring>
 #include <math.h>
 #include <locale>
+#include<ctime>
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -34,7 +35,8 @@ deque<double> sensor1_data;
 deque<double> sensor2_data;
 enum HashType{ HashSha1, HashMd5, HashSha256 };
 string GetHashText(const void * data, const size_t data_size, HashType hashType);
-
+#define TICKS_PER_SECOND 10000000
+#define EPOCH_DIFFERENCE 11644473600LL
 
 double getDoubleNumber(string input)
 {
@@ -53,6 +55,13 @@ double gluc(double value){
 
 double calc_doses(double g, double dg, double ddg){
 	return 0;
+}
+
+time_t convertWindowsTimeToUnixTime(long long int input){
+	long long int temp;
+	temp = input / TICKS_PER_SECOND; //convert from 100ns intervals to seconds;
+	temp = temp - EPOCH_DIFFERENCE;  //subtract number of seconds between epochs
+	return (time_t)temp;
 }
 
 string processValues(int iteration_number, string timestamp, double sensor1_t1, double sensor2_t1, double sensor1_t2, double sensor2_t2, double sensor1_t3, double sensor2_t3, double insulinaAtual)
@@ -182,7 +191,7 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 
 	// Retornar mensagem a enviar
 	string sentence = "putresult ";
-	long s_timestamp = 11111;
+	std::time_t s_timestamp = std::time(0) * 1000;  // t is an integer type
 	sentence += to_string(iteration_number) + " ";
 	sentence += to_string(s_timestamp) + " ";
 	sentence += to_string(numDoses);
@@ -191,7 +200,7 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 	sentence += " ";
 	sentence += hash;
 	sentence += "\n";
-	cout << "sentence function" << sentence << endl;
+	//cout << "sentence function" << sentence << endl;
 	return sentence;
 }
 
@@ -328,6 +337,7 @@ int __cdecl main(void)
 	// No longer need server socket
 	closesocket(ListenSocket);
 	char* sentence;
+	string temp;
 	// Receive until the peer shuts down the connection
 	do {
 		char inputchar = '1';
@@ -344,12 +354,12 @@ int __cdecl main(void)
 		}
 		sentence[posicao] = '\0';
 		//cout << "count: " << posicao << endl; 
-		cout << "[RECEIVED]: " << sentence << endl;
+		cout << "[RECEIVED]: " << sentence;
 		//system("pause");
 		string sentence_str(sentence);
 		istringstream iss(sentence_str);
 
-		string temp;
+		temp = "";
 		iss >> temp;
 
 		if (temp == "putdata")
@@ -364,8 +374,6 @@ int __cdecl main(void)
 			iss >> temp; iteration_number = stoi(temp);  input_string_altered += temp + " ";
 
 			iss >> timestamp; input_string_altered += timestamp + " ";
-
-			cout << "timestamp atual" << endl;
 
 			iss >> temp; sensor1_t1 = getDoubleNumber(temp); input_string_altered += temp + " ";
 
@@ -400,22 +408,18 @@ int __cdecl main(void)
 				cout << "Verificacao da Hash recebida falhou" << endl;
 			}
 		}
+	} while (temp != "end");
 
-	} while (strcmp(sentence, "end") != 0);
-	system("pause");
+	char* ackStr = "ack";
+	send(ClientSocket, ackStr, strlen(ackStr), 0);
+	cout << "[SENT]: " << ackStr << endl;
 
 	// shutdown the connection since we're done
-	iResult = shutdown(ClientSocket, SD_SEND);
-	if (iResult == SOCKET_ERROR) {
-		printf("shutdown failed with error: %d\n", WSAGetLastError());
-		closesocket(ClientSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	// cleanup
+	shutdown(ClientSocket, SD_SEND);
 	closesocket(ClientSocket);
 	WSACleanup();
+	cout << "Processo terminou com sucesso." << endl;
+	system("pause");
 
 	return 0;
 }
