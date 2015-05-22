@@ -26,13 +26,12 @@ public class Main {
         }
         else if(args.length == 1){
             inputFilename = args[0];
-            outputFilename = "output_"+ new Date().getTime();
+            outputFilename = "output_of_"+ inputFilename + "_" + new Date().getTime() + ".txt";
         }
         else{
             inputFilename = "input.txt";
-            outputFilename = "output_"+ new Date().getTime();
+            outputFilename = "output_of_"+ inputFilename + "_" + new Date().getTime() + ".txt";
         }
-
 
         readFile(inputFilename);
         //BufferedReader Systemin =new BufferedReader(new InputStreamReader(System.in));
@@ -307,11 +306,12 @@ public class Main {
     public static void readFile(String filename) {
 
         BufferedReader br = null;
+        String line = null;
         try {
             br = new BufferedReader(new FileReader(filename));
             sensor1.add("0");
             sensor2.add("0");
-            String line = br.readLine();
+            line = br.readLine();
             while(line != null){
                 sensor1.add(line.split(" ")[0]);
                 sensor2.add(line.split(" ")[1]);
@@ -322,6 +322,11 @@ public class Main {
             return;
         } catch (IOException e) {
             System.out.println("Erro: Ficheiro nao existe ou nao esta acessivel.");
+            e.printStackTrace();
+            return;
+        } catch (ArrayIndexOutOfBoundsException e){
+            System.out.println(line);
+            System.out.println("Erro: Linha invalida.");
             e.printStackTrace();
             return;
         }
