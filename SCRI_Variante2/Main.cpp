@@ -26,6 +26,7 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "6791"
 #define INVALID_DOUBLE -1
+#define MIN_SENSOR_RECORD 6
 #define MAX_SENSOR_RECORD 12
 
 using namespace std;
@@ -47,7 +48,7 @@ double getDoubleNumber(string input)
 }
 
 double gluc(double value){
-	return -3.4 + 1.354 * value + 1.545 * tan( pow(value,(1/4)));
+	return -3.4 + 1.354 * value + 1.545 * tan(pow(value, (1 / 4)));
 }
 
 double calc_doses(double g, double dg, double ddg){
@@ -63,36 +64,45 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 	numOcc1 = numOcc2 = 0;
 	trust1 = trust2 = true;
 
-	// VERIFICAR QUANTIDADE DE INFORMA√á√ÉO
+	// VERIFICAR QUANTIDADE DE INFORMA«√O
 	if (((sensor1_t1 == -1) && (sensor2_t1 == -1)) || ((sensor1_t2 == -1) && (sensor2_t2 == -1)) || ((sensor1_t2 == -1) && (sensor2_t2 == -1)))
 	{
-		cout << "[ERRO]: SEM INFORMA√á√ÉO SUFICIENTE " << endl << "       AMBOS OS SENSORES FALHARAM NO MESMO INSTANTE T" << endl;
+		cout << "[ERRO]: SEM INFORMA«√O SUFICIENTE " << endl << "       AMBOS OS SENSORES FALHARAM NO MESMO INSTANTE T" << endl;
 		numDoses = -1;
 	}
 	else
 	{
+		
+			// VERIFICAR INTEGRIDADE SENSORES - STUCK AT'S
+			if (sensor1_t1 != -1) sensor1_data.push_back(sensor1_t1);
+			if (sensor1_t2 != -1) sensor1_data.push_back(sensor1_t2);
+			if (sensor1_t3 != -1) sensor1_data.push_back(sensor1_t3);
 
-		// VERIFICAR INTEGRIDADE SENSORES - STUCK AT'S
-		if (sensor1_t1 != -1) sensor1_data.push_back(sensor1_t1);
-		if (sensor1_t2 != -1) sensor1_data.push_back(sensor1_t2);
-		if (sensor1_t3 != -1) sensor1_data.push_back(sensor1_t3);
-		numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t1);
-		if (numOcc1 == sensor1_data.size()) trust1 = false;
-		numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t2);
-		if (numOcc1 == sensor1_data.size()) trust1 = false;
-		numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t3);
-		if (numOcc1 == sensor1_data.size()) trust1 = false;
+			if (sensor1_data.size() >= MIN_SENSOR_RECORD)
+			{
+				numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t1);
+				if (numOcc1 == sensor1_data.size()) trust1 = false;
+				numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t2);
+				if (numOcc1 == sensor1_data.size()) trust1 = false;
+				numOcc1 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor1_t3);
+				if (numOcc1 == sensor1_data.size()) trust1 = false;
+			}
+			else trust1 = true;
 
-
-		if (sensor2_t1 != -1) sensor2_data.push_back(sensor2_t1);
-		if (sensor2_t2 != -1) sensor2_data.push_back(sensor2_t2);
-		if (sensor2_t3 != -1) sensor2_data.push_back(sensor2_t3);
-		numOcc2 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor2_t1);
-		if (numOcc2 == sensor2_data.size()) trust1 = false;
-		numOcc2 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor2_t2);
-		if (numOcc2 == sensor2_data.size()) trust1 = false;
-		numOcc2 = std::count(sensor1_data.begin(), sensor1_data.end(), sensor2_t3);
-		if (numOcc2 == sensor2_data.size()) trust1 = false;
+		
+			if (sensor2_t1 != -1) sensor2_data.push_back(sensor2_t1);
+			if (sensor2_t2 != -1) sensor2_data.push_back(sensor2_t2);
+			if (sensor2_t3 != -1) sensor2_data.push_back(sensor2_t3);
+			if (sensor2_data.size() >= MIN_SENSOR_RECORD)
+			{
+				numOcc2 = std::count(sensor2_data.begin(), sensor2_data.end(), sensor2_t1);
+				if (numOcc2 == sensor2_data.size()) trust2 = false;
+				numOcc2 = std::count(sensor2_data.begin(), sensor2_data.end(), sensor2_t2);
+				if (numOcc2 == sensor2_data.size()) trust2 = false;
+				numOcc2 = std::count(sensor2_data.begin(), sensor2_data.end(), sensor2_t3);
+				if (numOcc2 == sensor2_data.size()) trust2 = false;
+			}
+			else trust2 = true;
 
 		if (trust1 == false && trust2 == false) // AMBOS FALHAM
 		{
@@ -146,10 +156,10 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 			else if (g3 >= 6.0 && dg >= -0.4)
 			{
 				// E necessario calcular o numero de doses
-				double ddg = (g2 - g1) - dg; //CONFIRMAR QUE NAO EST√Å AO CONTRARIO
+				double ddg = (g2 - g1) - dg; //CONFIRMAR QUE NAO EST¡ AO CONTRARIO
 				numDoses = (int)ceil((0.8 * g3) + (0.2 * dg) + (0.5 * ddg) - insulinaAtual); //VERIFICAR CEIl
 			}
-		
+
 		}
 
 
@@ -168,14 +178,16 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 		}
 	}
 
-	
+
 
 	// Retornar mensagem a enviar
 	string sentence = "putresult ";
-	sentence += to_string(iteration_number) + " " ;
+	long s_timestamp = 11111;
+	sentence += to_string(iteration_number) + " ";
+	sentence += to_string(s_timestamp) + " ";
 	sentence += to_string(numDoses);
 	const char* temp = sentence.c_str();
-	string hash = GetHashText(temp, strlen(temp), HashMd5) ;
+	string hash = GetHashText(temp, strlen(temp), HashMd5);
 	sentence += " ";
 	sentence += hash;
 	sentence += "\n";
@@ -321,7 +333,7 @@ int __cdecl main(void)
 		char inputchar = '1';
 		int posicao = 0;
 		sentence = new char[500];
-		
+
 		recv(ClientSocket, &inputchar, 1, 0);
 		sentence[posicao++] = inputchar;
 
@@ -339,11 +351,11 @@ int __cdecl main(void)
 
 		string temp;
 		iss >> temp;
-		
+
 		if (temp == "putdata")
 		{
-			int iteration_number; 
-			string timestamp, inputHash, alteredHash; 
+			int iteration_number;
+			string timestamp, inputHash, alteredHash;
 			double sensor1_t1, sensor1_t2, sensor1_t3, sensor2_t1, sensor2_t2, sensor2_t3, insulinaAtual;
 			string input_string_altered = "putdata ";
 			sensor1_t1 = sensor1_t2 = sensor1_t3 = sensor2_t1 = sensor2_t2 = sensor2_t3 = -1;
@@ -353,6 +365,8 @@ int __cdecl main(void)
 
 			iss >> timestamp; input_string_altered += timestamp + " ";
 
+			cout << "timestamp atual" << endl;
+
 			iss >> temp; sensor1_t1 = getDoubleNumber(temp); input_string_altered += temp + " ";
 
 			iss >> temp; sensor2_t1 = getDoubleNumber(temp); input_string_altered += temp + " ";
@@ -360,10 +374,10 @@ int __cdecl main(void)
 			iss >> temp; sensor1_t2 = getDoubleNumber(temp); input_string_altered += temp + " ";
 
 			iss >> temp; sensor2_t2 = getDoubleNumber(temp); input_string_altered += temp + " ";
-			
+
 			iss >> temp; sensor1_t3 = getDoubleNumber(temp); input_string_altered += temp + " ";
 
-			iss >> temp; sensor2_t3 = getDoubleNumber(temp); input_string_altered += temp ;
+			iss >> temp; sensor2_t3 = getDoubleNumber(temp); input_string_altered += temp + " ";
 
 			iss >> temp; insulinaAtual = getDoubleNumber(temp); input_string_altered += temp;
 
@@ -387,7 +401,7 @@ int __cdecl main(void)
 			}
 		}
 
-	} while (strcmp(sentence,"end") != 0 );
+	} while (strcmp(sentence, "end") != 0);
 	system("pause");
 
 	// shutdown the connection since we're done
