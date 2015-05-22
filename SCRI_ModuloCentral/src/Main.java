@@ -114,8 +114,9 @@ public class Main {
             return;
         }
 
-
-
+        boolean VAR1_CONNECTED = true;
+        boolean VAR2_CONNECTED = true;
+        boolean VAR3_CONNECTED = true;
 
         int iterator = 0;
         double currentInsulin = 0.0;
@@ -136,44 +137,95 @@ public class Main {
             }
             else{
                 System.out.println("[Main]["+iterator+"]Execucao Terminou - Nao ha mais valores para avaliar");
-                outToServerV1.println("end");
-                outToServerV2.println("end");
-                //outToServerV3.println("end");
-                try {
-                    String receivedV1 = inFromServerV1.readLine();
-                    String receivedV2 = inFromServerV2.readLine();
-                    //String receivedV3 = inFromServerV3.readLine();
 
-                    if (receivedV1.equals("ack")) {
-                        return;
+                try{
+                    if(VAR1_CONNECTED) {
+                        outToServerV1.println("end");
+                        String receivedV1 = inFromServerV1.readLine();
+
+                        if (receivedV1.equals("ack")) {
+                            return;
+                        }
                     }
-                } catch (IOException e) {
+                }catch (IOException e){
                     System.out.println("Erro: Empty Socket");
                 }
 
+                try{
+                    if(VAR2_CONNECTED) {
+                        outToServerV2.println("end");
+                        String receivedV2 = inFromServerV2.readLine();
+
+                        if (receivedV2.equals("ack")) {
+                            return;
+                        }
+                    }
+                }catch (IOException e){
+                    System.out.println("Erro: Empty Socket");
+                }
+
+                /*
+                try{
+                    if(VAR3_CONNECTED) {
+                        outToServerV3.println("end");
+                        String receivedV3 = inFromServerV1.readLine();
+
+                        if (receivedV3.equals("ack")) {
+                            return;
+                        }
+                    }
+                }catch (IOException e){
+                    System.out.println("Erro: Empty Socket");
+                }
+                */
+
+            }
+
+            String receivedV1 = "";
+            String receivedV2 = "";
+            String receivedV3 = "";
+
+            ArrayList<Double> results = new ArrayList<Double>();
+
+            // Tentar ler a cada Variante
+            try {
+                receivedV1 = inFromServerV1.readLine();
+                double resultV1 = verifyResponse(receivedV1,1);
+                if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
+            }
+            catch(IOException e) {
+                System.out.println("[Main] Variante 1 Desconectada");
+                VAR1_CONNECTED = false;
             }
 
             try {
-
-                String receivedV1 = inFromServerV1.readLine();
-                String receivedV2 = inFromServerV2.readLine();
-                //String receivedV3 = inFromServerV3.readLine();
-
-                //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
-                //System.out.println("[Main]["+iterator+"]Recebi de V2: " + receivedV2);
-                //System.out.println("[Main]["+iterator+"]Recebi de V3: " + receivedV3);
-
-                // VOTADOR
-                ArrayList<Double> results = new ArrayList<Double>();
-                // Verifica Hash e retorn o valor, se hash for incorrecta devolve -2
-
-                double resultV1 = verifyResponse(receivedV1,1);
+                receivedV2 = inFromServerV2.readLine();
                 double resultV2 = verifyResponse(receivedV2,2);
-                //double resultV3 = verifyResponse(receivedV3,3);
-                results.clear();
-                if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
                 if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
+            }
+            catch(IOException e) {
+                System.out.println("[Main] Variante 2 Desconectada");
+                VAR2_CONNECTED = false;
+            }
+
+            /*
+            try {
+                receivedV3 = inFromServerV3.readLine();
+                double resultV3 = verifyResponse(receivedV3,3);
                 //if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
+            }
+            catch(IOException e) {
+                System.out.println("[Main] Variante 3 Desconectada");
+                VAR3_CONNECTED = false;
+            }
+            /*/
+
+            //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
+            //System.out.println("[Main]["+iterator+"]Recebi de V2: " + receivedV2);
+            //System.out.println("[Main]["+iterator+"]Recebi de V3: " + receivedV3);
+
+            try{
+                // VOTADOR
                 System.out.print("[Main]["+iterator+"]Vai ser realizada a votacao com valores ");
                 for(int i = 0; i < results.size(); i++){
                     System.out.print(results.get(i) + " ");
@@ -201,7 +253,7 @@ public class Main {
                 //System.out.println("[Main]["+iterator+"]Em espera "+ delay + " segundos ate a proxima iteracao");
                 Thread.sleep(delay * 1000);
 
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
                 System.out.println("Erro: Erro de ligacao ou interrupcao");
                 e.printStackTrace();
                 return;
