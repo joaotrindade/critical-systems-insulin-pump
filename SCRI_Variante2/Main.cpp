@@ -33,6 +33,7 @@
 #define INVALID_DOUBLE -1
 #define MIN_SENSOR_RECORD 6
 #define MAX_SENSOR_RECORD 12
+#define PI 3.14159265
 
 using namespace std;
 deque<double> sensor1_data;
@@ -109,7 +110,7 @@ double getDoubleNumber(string input)
 }
 
 double gluc(double value){
-	return -3.4 + 1.354 * value + 1.545 * tan(pow(value, (1 / 4)));
+	return (-3.4 + (1.354 * value) + (1.545 * tan(pow(value,0.25))));
 }
 
 double calc_doses(double g, double dg, double ddg){
@@ -198,9 +199,17 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 			else // AMBOS OS SENSOSRES OK. FAZ MEDIA
 			{
 				cout << "AMBOS OS SENSORES OK" << endl;
-				var1 = (sensor1_t1 + sensor2_t1) / 2;
-				var2 = (sensor1_t2 + sensor2_t2) / 2;
-				var3 = (sensor1_t3 + sensor2_t3) / 2;
+				if (sensor1_t1 == -1) var1 = sensor2_t1;
+				else if (sensor2_t1 == -1) var1 = sensor1_t1;
+				else var1 = (sensor1_t1 + sensor2_t1) / 2;
+
+				if (sensor1_t2 == -1) var2 = sensor2_t2;
+				else if (sensor2_t2 == -1) var2 = sensor1_t2;
+				else var2 = (sensor1_t2 + sensor2_t2) / 2;
+				
+				if (sensor1_t3 == -1) var3 = sensor2_t3;
+				else if (sensor2_t3 == -1) var3 = sensor1_t3;
+				else var3 = (sensor1_t3 + sensor2_t3) / 2;
 
 			}
 
@@ -209,7 +218,6 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 			g3 = gluc(var3);
 
 			dg = g3 - g2;
-
 
 			if (g3 < 6.0)
 			{
