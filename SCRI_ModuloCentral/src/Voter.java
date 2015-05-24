@@ -12,7 +12,7 @@ public class Voter {
 
     Voter(ArrayList<Double> results){
         consensus = false;
-        tolerance = 1.0;
+        tolerance = 1.1;
         receivedValues = results;
         elect();
     }

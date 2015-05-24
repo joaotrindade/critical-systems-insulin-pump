@@ -14,6 +14,9 @@ public class Device {
     private int sensor1ErrorCounter;
     private int sensor2ErrorCounter;
     private double currentInsulin = 0.0;
+    private int avaiableInsulinDoses;
+
+
 
 
     public Device(){
@@ -22,6 +25,8 @@ public class Device {
 
         sensor1ErrorCounter = 0;
         sensor2ErrorCounter = 0;
+
+        avaiableInsulinDoses = 400;
     }
 
     public ArrayList<Double> getMinute(int minute){
@@ -90,7 +95,6 @@ public class Device {
     }
 
     public boolean avaliateSensors(){
-        // TODO: Codigo para verificar stuckat
         if(sensor1ErrorCounter >= 5){
             System.out.println("\t[Device] Foram detectados demasiados erros no sensor 1. Por favor contacte o suporte");
             this.sensor1ErrorCounter = 0;
@@ -174,10 +178,19 @@ public class Device {
         if(value < 0){
             return -1;
         }
-        if(value >= 10){
-            return 5; // Numero maximo de doses por iteração
+        else if(value > 10){
+            avaiableInsulinDoses -= 10;
+            return 10; // Numero maximo de doses por iteração
         }
-        return value;
+        else if(avaiableInsulinDoses - value < 0){
+            System.out.println("\t[Device] Nao ha insulina disponivel para as proximas iteracoes!");
+            avaiableInsulinDoses = 0;
+            return avaiableInsulinDoses;
+        }
+        else{
+            avaiableInsulinDoses -= value;
+            return value;
+        }
     }
     private double calcDoses(double g, double dg, double ddg, double ins){ return 0.8*g + 0.2 * dg + 0.5*ddg - ins; }
     private double gluc(double entry){

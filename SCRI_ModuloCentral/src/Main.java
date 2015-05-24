@@ -40,13 +40,12 @@ public class Main {
         Socket socketv2 = null;
         Socket socketv3 = null;
 
-        PrintWriter outToServerV1;
-        BufferedReader inFromServerV1;
-        PrintWriter outToServerV2;
-        BufferedReader inFromServerV2;
-        /*
-        PrintWriter outToServerV3;
-        BufferedReader inFromServerV3; */
+        PrintWriter     outToServerV1 = null;
+        BufferedReader  inFromServerV1 = null;
+        PrintWriter     outToServerV2 = null;
+        BufferedReader  inFromServerV2 = null;
+        PrintWriter     outToServerV3 = null;
+        BufferedReader  inFromServerV3 = null;
 
         byte[] recBuf = new byte[1024];
 
@@ -65,6 +64,14 @@ public class Main {
         Boolean connected = false;
         int tentativa = 0;
 
+        boolean VAR1_CONNECTED = false;
+        boolean VAR2_CONNECTED = false;
+        boolean VAR3_CONNECTED = false;
+
+        boolean VAR1_ENDED = false;
+        boolean VAR2_ENDED = false;
+        boolean VAR3_ENDED = false;
+
         while(!connected){
             tentativa++;
             try {
@@ -74,8 +81,8 @@ public class Main {
                 socketv2 = new Socket(address, port2);
                 socketv2.setSoTimeout(10000);
 //
-                //socketv3 = new Socket(address, port3);
-                //socketv3.setSoTimeout(10000);
+                socketv3 = new Socket(address, port3);
+                socketv3.setSoTimeout(10000);
 
                 Thread.sleep(1000);
 
@@ -90,6 +97,21 @@ public class Main {
             }
             finally {
                 if (socketv1 != null){
+                    VAR1_CONNECTED = true;
+                }
+                if (socketv2 != null){
+                    VAR2_CONNECTED = true;
+                }
+                if (socketv3 != null){
+                    VAR3_CONNECTED = true;
+                }
+
+                // Para testar uma variante individualmente descomentar esta condição e comentar a abaixo
+                //if(VAR1_CONNECTED || VAR2_CONNECTED || VAR3_CONNECTED){
+                //    connected = true;
+                //}
+
+                if(VAR1_CONNECTED && VAR2_CONNECTED /*&& VAR3_CONNECTED*/){
                     connected = true;
                 }
             }
@@ -97,25 +119,27 @@ public class Main {
         }
 
         try {
-            outToServerV1= new PrintWriter(socketv1.getOutputStream(),true);
-            inFromServerV1 = new BufferedReader(new InputStreamReader(socketv1.getInputStream()));
+            if(VAR1_CONNECTED){
+                outToServerV1= new PrintWriter(socketv1.getOutputStream(),true);
+                inFromServerV1 = new BufferedReader(new InputStreamReader(socketv1.getInputStream()));
+            }
 
-            outToServerV2 = new PrintWriter(socketv2.getOutputStream(),true);
-            inFromServerV2 = new BufferedReader(new InputStreamReader(socketv2.getInputStream()));
-            /*
-            outToServerV3 = new PrintWriter(socketv3.getOutputStream(),true);
-            inFromServerV3 = new BufferedReader(new InputStreamReader(socketv3.getInputStream()));
-            */
+            if(VAR2_CONNECTED){
+                outToServerV2 = new PrintWriter(socketv2.getOutputStream(),true);
+                inFromServerV2 = new BufferedReader(new InputStreamReader(socketv2.getInputStream()));
+            }
+
+            if(VAR3_CONNECTED){
+                outToServerV3 = new PrintWriter(socketv3.getOutputStream(),true);
+                inFromServerV3 = new BufferedReader(new InputStreamReader(socketv3.getInputStream()));
+            }
+
 
         } catch (IOException e) {
             System.out.println("Erro: Ligacao ao socket.");
             e.printStackTrace();
             return;
         }
-
-        boolean VAR1_CONNECTED = true;
-        boolean VAR2_CONNECTED = true;
-        boolean VAR3_CONNECTED = true;
 
         int iterator = 0;
         double currentInsulin = 0.0;
@@ -130,9 +154,10 @@ public class Main {
 
                 String sendBufString = message;
 
-                outToServerV1.println(sendBufString);
-                outToServerV2.println(sendBufString);
-                //outToServerV2.println(sendBufString);
+                if(VAR1_CONNECTED) { outToServerV1.println(sendBufString); }
+                if(VAR2_CONNECTED) { outToServerV2.println(sendBufString); }
+                if(VAR3_CONNECTED) { outToServerV3.println(sendBufString); }
+
             }
             else{
                 System.out.println("[Main]["+iterator+"]Execucao Terminou - Nao ha mais valores para avaliar");
@@ -143,7 +168,7 @@ public class Main {
                         String receivedV1 = inFromServerV1.readLine();
 
                         if (receivedV1.equals("ack")) {
-                            return;
+                            VAR1_ENDED = true;
                         }
                     }
                 }catch (IOException e){
@@ -156,27 +181,30 @@ public class Main {
                         String receivedV2 = inFromServerV2.readLine();
 
                         if (receivedV2.equals("ack")) {
-                            return;
+                            VAR2_ENDED = true;
                         }
                     }
                 }catch (IOException e){
                     System.out.println("Erro: Empty Socket");
                 }
 
-                /*
+
                 try{
                     if(VAR3_CONNECTED) {
                         outToServerV3.println("end");
                         String receivedV3 = inFromServerV1.readLine();
 
                         if (receivedV3.equals("ack")) {
-                            return;
+                            VAR3_ENDED = true;
                         }
                     }
                 }catch (IOException e){
                     System.out.println("Erro: Empty Socket");
                 }
-                */
+
+                if(VAR1_ENDED && VAR2_ENDED /* VAR3_ENDED*/){
+                    return;
+                }
 
             }
 
@@ -188,9 +216,11 @@ public class Main {
 
             // Tentar ler a cada Variante
             try {
-                receivedV1 = inFromServerV1.readLine();
-                double resultV1 = verifyResponse(receivedV1,1);
-                if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
+                if(VAR1_CONNECTED){
+                    receivedV1 = inFromServerV1.readLine();
+                    double resultV1 = verifyResponse(receivedV1,1);
+                    if(resultV1 != INVALID_HASH && resultV1 != NO_RETURN_FROM_VARIANT){ results.add(resultV1);}
+                }
             }
             catch(IOException e) {
                 System.out.println("[Main] Variante 1 Desconectada");
@@ -198,26 +228,30 @@ public class Main {
             }
 
             try {
-                receivedV2 = inFromServerV2.readLine();
-                double resultV2 = verifyResponse(receivedV2,2);
-                if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
+                if(VAR2_CONNECTED){
+                    receivedV2 = inFromServerV2.readLine();
+                    double resultV2 = verifyResponse(receivedV2,2);
+                    if(resultV2 != INVALID_HASH && resultV2 != NO_RETURN_FROM_VARIANT){ results.add(resultV2);}
+                }
             }
             catch(IOException e) {
                 System.out.println("[Main] Variante 2 Desconectada");
                 VAR2_CONNECTED = false;
             }
 
-            /*
+
             try {
-                receivedV3 = inFromServerV3.readLine();
-                double resultV3 = verifyResponse(receivedV3,3);
-                //if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
+                if(VAR3_CONNECTED){
+                    receivedV3 = inFromServerV3.readLine();
+                    double resultV3 = verifyResponse(receivedV3,3);
+                    if(resultV3 != INVALID_HASH && resultV3 != NO_RETURN_FROM_VARIANT){ results.add(resultV3);}
+                }
             }
             catch(IOException e) {
                 System.out.println("[Main] Variante 3 Desconectada");
                 VAR3_CONNECTED = false;
             }
-            /*/
+
 
             //System.out.println("[Main]["+iterator+"]Recebi de V1: " + receivedV1);
             //System.out.println("[Main]["+iterator+"]Recebi de V2: " + receivedV2);

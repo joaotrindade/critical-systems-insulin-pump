@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Variante 1");
         System.out.println("A correr na porta 6791");
-        int portNumber = 6792;
+        int portNumber = 6791;
         Device device = new Device();
 
         try {
