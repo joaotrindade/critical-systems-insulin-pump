@@ -34,7 +34,10 @@
 #define MIN_SENSOR_RECORD 6
 #define MAX_SENSOR_RECORD 12
 #define PI 3.14159265
-
+#define LOWERBOUND_DOMAIN 0.8
+#define UPPERBOUND_DOMAIN 6
+#define LOWERBOUND_AT -1
+#define UPPERBOUND_AT 10
 using namespace std;
 deque<double> sensor1_data;
 deque<double> sensor2_data;
@@ -132,6 +135,15 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 	double var1, var2, var3, g1, g2, g3, dg;
 	numOcc1 = numOcc2 = 0;
 	trust1 = trust2 = true;
+	
+	//VERIFICAÇÃO DO DOMINIO DO INPUT
+	if (sensor1_t1 < LOWERBOUND_DOMAIN || sensor1_t1 > UPPERBOUND_DOMAIN) sensor1_t1 = -1 ;
+	if (sensor1_t2 < LOWERBOUND_DOMAIN || sensor1_t2 > UPPERBOUND_DOMAIN) sensor1_t2 = -1 ;
+	if (sensor1_t3 < LOWERBOUND_DOMAIN || sensor1_t3 > UPPERBOUND_DOMAIN) sensor1_t3 = -1 ;
+	
+	if (sensor2_t1 < LOWERBOUND_DOMAIN || sensor2_t1 > UPPERBOUND_DOMAIN) sensor2_t1 = -1 ;
+	if (sensor2_t2 < LOWERBOUND_DOMAIN || sensor2_t2 > UPPERBOUND_DOMAIN) sensor2_t2 = -1 ;
+	if (sensor2_t3 < LOWERBOUND_DOMAIN || sensor2_t3 > UPPERBOUND_DOMAIN) sensor2_t3 = -1 ;
 
 	// VERIFICAR QUANTIDADE DE INFORMAÇÃO
 	if (((sensor1_t1 == -1) && (sensor2_t1 == -1)) || ((sensor1_t2 == -1) && (sensor2_t2 == -1)) || ((sensor1_t2 == -1) && (sensor2_t2 == -1)))
@@ -254,7 +266,8 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 		}
 	}
 
-
+	//TESTE ACEITACAO
+	if(numDoses < LOWERBOUND_AT || numDoses > UPPERBOUND_AT) numDoses = -1;
 
 	// Retornar mensagem a enviar
 	string sentence = "putresult ";
