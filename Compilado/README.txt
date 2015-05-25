@@ -1,0 +1,15 @@
+Para correr, devem ser corridas todas as variantes e, depois, o programa principal. O programa principal só irá começar a enviar as mensagens a pedir cálculos após todas as variantes ficarem conectadas, no entanto, se a meio da execução uma variante se desconectar, o programa continuará a correr com as outras duas variantes.
+
+Correr as variantes:
+>java -jar SCRI_Variante1.jar
+>SCRI_Variante2
+>
+
+Correr Módulo Central:
+>java -jar SCRI_ModuloCentral.jar
+
+Opcionalmente podem ser passados 2 parâmetros à chamada acima:
+>java -jar SCRI_ModuloCentral.jar [ficheiro input] [nome ficheiro output]
+Também é possível chamar passando só o nome do ficheiro de input
+>java -jar SCRI_ModuloCentral.jar [ficheiro input]
+Caso nao seja passado qualquer valor, o programa corre o ficheiro "input.exe" da pasta.
