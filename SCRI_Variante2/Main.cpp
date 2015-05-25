@@ -38,6 +38,7 @@
 #define UPPERBOUND_DOMAIN 6
 #define LOWERBOUND_AT -1
 #define UPPERBOUND_AT 10
+#define LOWERBOUND_INSULINA 0
 using namespace std;
 deque<double> sensor1_data;
 deque<double> sensor2_data;
@@ -46,6 +47,8 @@ enum HashType{ HashSha1, HashMd5, HashSha256 };
 #define TICKS_PER_SECOND 10000000
 #define EPOCH_DIFFERENCE 11644473600LL
 
+
+int lastIteration ;
 string GetHashText(const void * data, const size_t data_size, HashType hashType)
 {
 	HCRYPTPROV hProv = NULL;
@@ -151,9 +154,19 @@ string processValues(int iteration_number, string timestamp, double sensor1_t1, 
 		cout << "[ERRO]: SEM INFORMAÇÃO SUFICIENTE " << endl << "       AMBOS OS SENSORES FALHARAM NO MESMO INSTANTE T" << endl;
 		numDoses = -1;
 	}
+	else if(iteration_number != lastIteration + 1)
+	{
+		cout << "[ERRO]: INFORMACAO NÃO FIDEDIGNA " << endl << "       A INFORMACAO RECEBIDA NAO CORRESPONDE AOS MINUTOS ESPERADOS" << endl;
+		numDoses = -1;
+	}
+	else if (insulinaAtual < LOWERBOUND_INSULINA)
+	{
+		cout << "[ERRO]: INFORMACAO NÃO FIDEDIGNA " << endl << "       O VALOR DE INSULINA ATUAL E' ABAIXO DO ESPERADO" << endl;
+		numDoses = -1;
+	}
 	else
 	{
-		
+			lastIteration++;
 			// VERIFICAR INTEGRIDADE SENSORES - STUCK AT'S
 			if (sensor1_t1 != -1) sensor1_data.push_back(sensor1_t1);
 			if (sensor1_t2 != -1) sensor1_data.push_back(sensor1_t2);
@@ -298,6 +311,8 @@ int __cdecl main(void)
 
 	//char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
+	
+	lastIteration = 0 ;
 
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
