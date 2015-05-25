@@ -1,6 +1,6 @@
 O código fonte de cada Variante e do Módulo Principal estão dentro da pasta homónima respectiva.
 
-O código já compilado e pronto a correr pode ser encontrado (com instruções) na pasta "ProgramasCompilados"
+O código já compilado e pronto a correr pode ser encontrado (com instruções) na pasta "Compilado"
 
 Tanto as variantes como o módulo central foram compilados em Windows.
 
@@ -19,3 +19,4 @@ Foi utilizada a consola de compilação fornecida com o Microsoft Visual Studio 
 4 - É criado o executavel Main.exe
 
 Variante 3:
+
