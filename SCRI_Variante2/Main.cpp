@@ -313,7 +313,7 @@ int __cdecl main(void)
 	int recvbuflen = DEFAULT_BUFLEN;
 	
 	lastIteration = 0 ;
-
+	cout << "Variante 2" << endl << "A correr na porta " << DEFAULT_PORT << endl;
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
@@ -372,7 +372,7 @@ int __cdecl main(void)
 		WSACleanup();
 		return 1;
 	}
-
+	
 	// No longer need server socket
 	closesocket(ListenSocket);
 	char* sentence;
