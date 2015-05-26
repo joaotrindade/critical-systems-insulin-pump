@@ -3,8 +3,11 @@ import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 
 public class Main {
@@ -384,7 +387,11 @@ public class Main {
         res+= sensor1.get(3*iterator + 3) + " ";
         res+= sensor2.get(3*iterator + 3) + " ";
 
-        res+= currentInsulin;
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.GERMAN);
+        otherSymbols.setDecimalSeparator('.');
+        DecimalFormat df = new DecimalFormat("#.##", otherSymbols);
+        currentInsulin = 234.23;
+        res+= df.format(currentInsulin);
 
         String hashed = hashString(res);
 
