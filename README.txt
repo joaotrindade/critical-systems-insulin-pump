@@ -23,3 +23,5 @@ Variante 3:
 1 - Abrir Command Prompt na pasta do projeto.
 2 - Introduzir >gnatmake var
 3 - Correr o executável gerado "Var.exe"
+
+Os output's gerados têm anexados no final do nome do ficheiro uma timestamp referente ao momento em que foi criado o ficheiro (iniciada a execução).

@@ -390,7 +390,7 @@ public class Main {
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.GERMAN);
         otherSymbols.setDecimalSeparator('.');
         DecimalFormat df = new DecimalFormat("#.##", otherSymbols);
-        currentInsulin = 234.23;
+
         res+= df.format(currentInsulin);
 
         String hashed = hashString(res);
