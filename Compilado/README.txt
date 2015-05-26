@@ -3,7 +3,7 @@ Para correr, devem ser corridas todas as variantes e, depois, o programa princip
 Correr as variantes:
 >java -jar SCRI_Variante1.jar (ou correr o ficheiro run_Variante1.bat)
 >SCRI_Variante2 (ou correr o ficheiro run_Variante2.bat)
->
+>SCRI_Variante3 
 
 Correr Módulo Central:
 >java -jar SCRI_ModuloCentral.jar

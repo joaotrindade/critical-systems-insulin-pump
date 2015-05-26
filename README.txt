@@ -9,6 +9,7 @@ Módulo Principal e Variante 1:
 2 - Introduzir >javac *.java
 3 - Introduzir >jar cfe NomeDoJar.jar Main Main.class
 4 - Introduzir >java -jar NomdeDoJar.jar
+Tanto o Módulo Principal como a Variante1 têm como ponto de entrada o ficheiro Main.java, logo as instruções servem para os dois casos.
 
 
 Variante 2:
@@ -19,4 +20,6 @@ Foi utilizada a consola de compilação fornecida com o Microsoft Visual Studio 
 4 - É criado o executavel Main.exe
 
 Variante 3:
-
+1 - Abrir Command Prompt na pasta do projeto.
+2 - Introduzir >gnatmake var
+3 - Correr o executável gerado "Var.exe"

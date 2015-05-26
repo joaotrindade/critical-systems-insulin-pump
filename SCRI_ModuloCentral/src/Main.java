@@ -114,7 +114,7 @@ public class Main {
                 //    connected = true;
                 //}
 
-                if(VAR1_CONNECTED && VAR2_CONNECTED /*&& VAR3_CONNECTED*/){
+                if(VAR1_CONNECTED && VAR2_CONNECTED && VAR3_CONNECTED){
                     connected = true;
                 }
             }
