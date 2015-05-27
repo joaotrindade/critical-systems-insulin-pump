@@ -22,8 +22,8 @@ public class Voter {
 
         if(temp.size()>1){
             // Seleccionar um dos elementos da resposta aleatoriamente
-            Random r = new Random();
-            int index = r.nextInt(temp.size()-1);
+            Random r = new Random(System.currentTimeMillis());
+            int index = r.nextInt(temp.size());
             Double value1 = temp.get(index);
             // Remover para não compara consigo mesmo
             temp.remove(index);
@@ -47,7 +47,7 @@ public class Voter {
                 votingResult = (int) Math.floor(value1);
             }
             else{
-                int indexF = r.nextInt(feasibleSet.size()-1);
+                int indexF = r.nextInt(feasibleSet.size());
                 consensus = true;
                 votingResult = (int) Math.floor(feasibleSet.get(indexF));
             }

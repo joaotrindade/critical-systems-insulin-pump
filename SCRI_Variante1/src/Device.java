@@ -111,6 +111,10 @@ public class Device {
     public double process(){
         // A partir dos 2 valores do sensor obter um valor - esta variante chega a esse valor pela média
         // Como estes valores podem ser apagados (por serem invalidos) é necessario percorre los como abaixo
+        if(minutes.get(1).isEmpty() || minutes.get(2).isEmpty() || minutes.get(3).isEmpty()){
+            System.out.println("\t[Device] Nao foi possível chegar a uma decisão. Demasiados inputs inválidos");
+            return -1.0;
+        }
 
         double sum = 0;
         for(int i = 0; i < minutes.get(1).size(); i++){

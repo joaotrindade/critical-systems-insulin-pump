@@ -52,8 +52,8 @@ public class Main {
 
         byte[] recBuf = new byte[1024];
 
-        int port1 = 6792;
-        int port2 = 6791;
+        int port1 = 6791;
+        int port2 = 6792;
         int port3 = 6793;
 
         try {
@@ -175,7 +175,7 @@ public class Main {
                         }
                     }
                 }catch (IOException e){
-                    System.out.println("Erro: Empty Socket");
+                    System.out.println("Erro: Empty Socket Var1");
                 }
 
                 try{
@@ -188,24 +188,24 @@ public class Main {
                         }
                     }
                 }catch (IOException e){
-                    System.out.println("Erro: Empty Socket");
+                    System.out.println("Erro: Empty Socket Var2");
                 }
 
 
                 try{
                     if(VAR3_CONNECTED) {
                         outToServerV3.println("end");
-                        String receivedV3 = inFromServerV1.readLine();
+                        String receivedV3 = inFromServerV3.readLine();
 
                         if (receivedV3.equals("ack")) {
                             VAR3_ENDED = true;
                         }
                     }
                 }catch (IOException e){
-                    System.out.println("Erro: Empty Socket");
+                    System.out.println("Erro: Empty Socket Var3");
                 }
 
-                if(VAR1_ENDED && VAR2_ENDED /* VAR3_ENDED*/){
+                if(VAR1_ENDED && VAR2_ENDED && VAR3_ENDED){
                     return;
                 }
 
@@ -390,7 +390,6 @@ public class Main {
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.GERMAN);
         otherSymbols.setDecimalSeparator('.');
         DecimalFormat df = new DecimalFormat("#.##", otherSymbols);
-
         res+= df.format(currentInsulin);
 
         String hashed = hashString(res);
